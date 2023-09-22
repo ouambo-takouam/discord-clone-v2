@@ -1,3 +1,3 @@
 export default async function SetupPage() {
-  return <div>Create a server</div>;
+  return <div>Create a server updated</div>;
 }
