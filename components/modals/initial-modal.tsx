@@ -1,12 +1,17 @@
 "use client";
+
 import * as z from "zod";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -20,17 +25,26 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import FileUpload from "@components/file-upload";
 
 const formSchema = z.object({
-  name: z.string().min(2, {
+  name: z.string().min(1, {
     message: "Server name is required",
   }),
-  imageUrl: z.string().min(2, {
+  imageUrl: z.string().min(1, {
     message: "Server image is required",
   }),
 });
 
 export function InitialModal() {
+  const [mounted, setMounted] = useState(false);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,15 +58,23 @@ export function InitialModal() {
 
   // 2. Define a submit handler.
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+    try {
+      await axios.post("/api/servers", values);
+
+      form.reset();
+      router.refresh();
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
+    }
   };
+
+  if (!mounted) return null;
 
   return (
     <Dialog open>
-      <DialogContent className="p-0 overflow-hidden">
-        <DialogHeader className="pt-8 px-6">
+      <DialogContent>
+        <DialogHeader>
           <DialogTitle className="text-2xl text-center">
             Customize your server
           </DialogTitle>
@@ -61,11 +83,26 @@ export function InitialModal() {
             always change it later.
           </DialogDescription>
         </DialogHeader>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="space-y-8 px-6">
               <div className="flex items-center justify-center text-center">
-                TODO: Image upload
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <FileUpload
+                          endpoint="imageUploader"
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               </div>
             </div>
 
@@ -89,7 +126,12 @@ export function InitialModal() {
                 </FormItem>
               )}
             />
-            <Button type="submit">Submit</Button>
+
+            <DialogFooter className="bg-gray-100 px-6 py-4">
+              <Button type="submit" disabled={isLoading} variant="primary">
+                Create
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>
