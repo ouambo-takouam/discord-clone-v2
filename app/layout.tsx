@@ -22,9 +22,9 @@ export default function RootLayout({
         <body className={font.className}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
+            defaultTheme="dark"
+            enableSystem={false}
+            storageKey="discord-theme"
           >
             {children}
           </ThemeProvider>
