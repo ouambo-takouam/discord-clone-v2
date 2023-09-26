@@ -20,9 +20,14 @@ export default function NavigationItem({
   const params = useParams();
   const router = useRouter();
 
+  const handleClick = () => router.push(`/servers/${id}`);
+
   return (
     <ActionTooltip label={name} side="right" align="center">
-      <button onClick={() => {}} className="group relative flex items-center">
+      <button
+        onClick={handleClick}
+        className="group relative flex items-center"
+      >
         <div
           className={cn(
             "absolute left-0 bg-primary rounded-r-full transition-all w-[4px]",
